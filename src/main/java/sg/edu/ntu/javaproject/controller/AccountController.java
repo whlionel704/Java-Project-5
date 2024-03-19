@@ -17,8 +17,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
-import sg.edu.ntu.javaproject.Exception.AccountNumberExistsException;
-import sg.edu.ntu.javaproject.Exception.NullException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.service.AccountService;
 
@@ -35,42 +33,38 @@ public class AccountController {
     }
 
     @PostMapping({ "", "/" })
-    public ResponseEntity<?> createAccount(@RequestBody Account account) {
-        try {
-            Account newAccount = accountService.createAccount(account);
-            String accountJson = objectMapper.writeValueAsString(newAccount);
-            log.info("new account created: " + accountJson);
-            return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
-        } catch (JsonProcessingException e) {
-            log.error("Error converting account to Json: {}", e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (AccountNumberExistsException e) {
-            log.error("Account number is already exists: {}", account.getAccountNumber());
-            return new ResponseEntity<>(e.getMessage(),
-                    HttpStatus.CONFLICT);
-        } catch (NullException e) {
-            log.error(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) throws JsonProcessingException {
+        Account newAccount = accountService.createAccount(account);
+        String accountJson = objectMapper.writeValueAsString(newAccount);
+        log.info("new account created: " + accountJson);
+        return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
     }
 
     @GetMapping({ "", "/" })
-    public ResponseEntity<ArrayList<Account>> getAllAccounts() {
+    public ResponseEntity<ArrayList<Account>> getAllAccounts() throws JsonProcessingException {
         ArrayList<Account> allAccounts = accountService.getAllAccounts();
+        String allAccountsJson = objectMapper.writeValueAsString(allAccounts);
+        log.info("retreiving all accounts");
+        log.info("account list: " + allAccountsJson);
         return new ResponseEntity<>(allAccounts, HttpStatus.OK);
     }
 
     @GetMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) {
+    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) throws JsonProcessingException {
         Account accountById = accountService.getAccountById(id);
+        String accountJson = objectMapper.writeValueAsString(accountById);
+        log.info("search account by account id " + id);
+        log.info("account details: " + accountJson);
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
     @GetMapping("/searchByCustomerId/{id}")
-    public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id) {
+    public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id)
+            throws JsonProcessingException {
         ArrayList<Account> accountList = accountService.getAccountByCustomerId(id);
-        log.info("search accounts by customer id: " + id);
+        String accountJson = objectMapper.writeValueAsString(accountList);
+        log.info("search accounts   by customer id: " + id);
+        log.info("account list: " + accountJson);
         return new ResponseEntity<>(accountList, HttpStatus.OK);
     }
 
@@ -81,8 +75,12 @@ public class AccountController {
     }
 
     @PutMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> updateAccountById(@PathVariable Integer id, @RequestBody Account account) {
+    public ResponseEntity<Account> updateAccountById(@PathVariable Integer id, @RequestBody Account account)
+            throws JsonProcessingException {
         Account updatedAccount = accountService.updateAccount(id, account);
+        String accountJson = objectMapper.writeValueAsString(updatedAccount);
+        log.info("updating account id: " + id);
+        log.info("new account details: " + accountJson);
         return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
     }
 

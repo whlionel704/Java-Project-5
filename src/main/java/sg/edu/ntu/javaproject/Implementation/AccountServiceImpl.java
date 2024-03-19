@@ -88,11 +88,13 @@ public class AccountServiceImpl implements AccountService {
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
             throw new AccountNumberExistsException(account.getAccountNumber());
         }
-        if (account.getAccountTypeId() != null && account.getCustomerId() == null
+        if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
+                && account.getCustomerId() == null
                 && accountRepository.existByAccountId(accountToUpdate.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(accountToUpdate.getCustomerId(), account.getAccountTypeId());
         }
-        if (account.getAccountTypeId() != null && account.getCustomerId() != null &&
+        if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
+                && account.getCustomerId() != null &&
                 accountRepository.existByAccountType(account.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(account.getCustomerId(), account.getAccountTypeId());
         }
