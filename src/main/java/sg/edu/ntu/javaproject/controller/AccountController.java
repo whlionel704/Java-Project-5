@@ -58,6 +58,7 @@ public class AccountController {
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
+    //Lionel changed searchByCustomerId to searchByUserId
     @GetMapping("/searchByCustomerId/{id}")
     public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {
