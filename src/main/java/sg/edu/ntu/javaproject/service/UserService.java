@@ -5,6 +5,7 @@ import sg.edu.ntu.javaproject.entity.User;
 
 public interface UserService {
     User createUser(User user);
+    User deleteUser(String id);
     /*
     Customer createCustomer(Customer customer);
     Customer getCustomer(Long id);

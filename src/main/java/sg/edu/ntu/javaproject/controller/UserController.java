@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
-import sg.edu.ntu.javaproject.entity.Account;
+import sg.edu.ntu.javaproject.Exception.UserNotFoundException;
 import sg.edu.ntu.javaproject.entity.User;
 import sg.edu.ntu.javaproject.service.UserService;
 
@@ -39,6 +37,15 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    
-
+    //delete a user
+    @DeleteMapping({"{id}","{id}/"})
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable String id) {
+  
+      try {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      } catch (UserNotFoundException e) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+      }
+    }
 }
