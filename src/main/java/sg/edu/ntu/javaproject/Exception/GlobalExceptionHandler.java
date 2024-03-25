@@ -7,19 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    @ExceptionHandler(JsonProcessingException.class)
-    public ResponseEntity<Object> handleJsonProcessingException(JsonProcessingException ex) {
-        String errorMessage = "Error converting account to Json: " + ex.getMessage();
-        log.error(errorMessage);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
-    }
 
     @ExceptionHandler(NullException.class)
     public ResponseEntity<ErrorResponse> handleNullException(RuntimeException e) {
@@ -36,7 +28,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({ AccountNotFoundException.class, AccountTypeIsNotExistException.class })
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(RuntimeException e) {
         log.error(e.getMessage());
-        return new ResponseEntity<>(new ErrorResponse(e.getMessage(), LocalDateTime.now()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ErrorResponse(e.getMessage(), LocalDateTime.now()), HttpStatus.NOT_FOUND);
     }
 
 }
