@@ -15,8 +15,4 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query(value = "select case when count(a.id) > 0 then true else false end from Account a where a.customerId = :customerId and a.accountTypeId = :accountTypeId")
     boolean existByAccountType(@Param("customerId") Integer customerId, @Param("accountTypeId") Integer accountTypeId);
-
-    @Query(value = "select case when count(a.id) > 0 then true else false end from Account a where a.id = :id and a.accountTypeId = :accountTypeId")
-    boolean existByAccountId(@Param("id") Integer accountId, @Param("accountTypeId") Integer accountTypeId);
-
 }

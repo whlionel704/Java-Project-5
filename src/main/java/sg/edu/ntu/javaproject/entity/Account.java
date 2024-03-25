@@ -53,6 +53,9 @@ public class Account {
 
     // @Transient
     // private Integer accountTypeId;
+    // @ManyToOne
+    // @JoinColumn(name = "account_type_id")
+    // private AccountType accountType;
 
     @Transient
     private String accountTypeName;

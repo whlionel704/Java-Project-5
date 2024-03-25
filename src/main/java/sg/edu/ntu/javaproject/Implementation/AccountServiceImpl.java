@@ -79,6 +79,10 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public ArrayList<Account> getAllAccounts() {
         List<Account> allAccounts = accountRepository.findAll();
+        for (Account account : allAccounts) {
+            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+            account.setAccountTypeName(savedAccountType.getAccountTypeName());
+        }
         return (ArrayList<Account>) allAccounts;
     }
 
@@ -90,7 +94,7 @@ public class AccountServiceImpl implements AccountService {
         }
         if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
                 && account.getCustomerId() == null
-                && accountRepository.existByAccountId(accountToUpdate.getCustomerId(), account.getAccountTypeId())) {
+                && accountRepository.existByAccountType(accountToUpdate.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(accountToUpdate.getCustomerId(), account.getAccountTypeId());
         }
         if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
@@ -101,7 +105,13 @@ public class AccountServiceImpl implements AccountService {
         if (account.getAccountTypeId() != null && !accountTypeRepository.existsById(account.getAccountTypeId())) {
             throw new AccountTypeIsNotExistException(account.getAccountTypeId());
         }
-        AccountType savedAccountType = accountTypeRepository.findById(id).get();
+        if (account.getCustomerId() != null && account.getAccountTypeId() != null
+                && accountRepository.existByAccountType(account.getCustomerId(), account.getAccountTypeId())) {
+            throw new AccountTypeIsExistException(account.getCustomerId(), account.getAccountTypeId());
+        }
+        AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId())
+                .orElseThrow(() -> new AccountTypeIsNotExistException(account.getAccountTypeId()));
+        ;
         if (account.getBalance() != null) {
             accountToUpdate.setBalance(account.getBalance());
         }
@@ -124,7 +134,10 @@ public class AccountServiceImpl implements AccountService {
         if (allAccounts.isEmpty()) {
             throw new AccountNotFoundException(id);
         }
+        for (Account account : allAccounts) {
+            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+            account.setAccountTypeName(savedAccountType.getAccountTypeName());
+        }
         return (ArrayList<Account>) allAccounts;
     }
-
 }
