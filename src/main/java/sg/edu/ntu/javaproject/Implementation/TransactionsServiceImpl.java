@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-
 import sg.edu.ntu.javaproject.Exception.CustomerAndAccountNotFoundException;
+import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
 import sg.edu.ntu.javaproject.Exception.InsufficientBalanceException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.Transactions;
@@ -54,6 +54,27 @@ public class TransactionsServiceImpl implements TransactionsService {
         accountRepository.save(savedAccount);
         return transactionsRepository.save(transaction);
 
+    }
+
+    @Override
+    public Transactions depositTransaction(Transactions transaction) {
+        // check if customerid with account type is exist
+        if (!accountRepository.existByAccountType(transaction.getCustomerId(), transaction.getAccountTypeId())) {
+            throw new CustomerAndAccountNotFoundException(transaction.getCustomerId(), transaction.getAccountTypeId());
+        }
+        Optional<Account> optionalAccount = accountRepository
+                .findByCustomerIdAndAccountTypeId(transaction.getCustomerId(), transaction.getAccountTypeId());
+        if (!optionalAccount.isPresent())
+            throw new CustomerNotFoundException(transaction.getCustomerId());
+        Account savedAccount = optionalAccount.get();
+        int balanceBefore = savedAccount.getBalance();
+        int balanceAfter = (balanceBefore + transaction.getAmount());
+        transaction.setBalanceBefore(balanceBefore);
+        transaction.setBalanceAfter(balanceAfter);
+        transaction.setTransactionTypeId(1);
+        savedAccount.setBalance(balanceAfter);
+        accountRepository.save(savedAccount);
+        return transactionsRepository.save(transaction);
     }
 
     @Override

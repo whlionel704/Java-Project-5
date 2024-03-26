@@ -7,6 +7,8 @@ import sg.edu.ntu.javaproject.entity.Transactions;
 public interface TransactionsService {
     Transactions withdrawTransaction(Transactions transaction);
 
+    Transactions depositTransaction(Transactions transaction);
+
     Transactions getTransactionsById(Integer id);
 
     ArrayList<Transactions> getAllTransactions();

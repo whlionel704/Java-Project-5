@@ -7,5 +7,5 @@ import sg.edu.ntu.javaproject.entity.Customers;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customers, Integer> {
-
+    Customers findByCustomerEmail(String customerEmail);
 }

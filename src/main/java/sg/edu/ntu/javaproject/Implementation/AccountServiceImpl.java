@@ -1,8 +1,13 @@
 package sg.edu.ntu.javaproject.Implementation;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import sg.edu.ntu.javaproject.Exception.AccountNotFoundException;
@@ -12,18 +17,26 @@ import sg.edu.ntu.javaproject.Exception.AccountTypeIsNotExistException;
 import sg.edu.ntu.javaproject.Exception.NullException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.AccountType;
+import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.repository.AccountRepository;
 import sg.edu.ntu.javaproject.repository.AccountTypeRepository;
+import sg.edu.ntu.javaproject.repository.CustomerRepository;
 import sg.edu.ntu.javaproject.service.AccountService;
 
 @Service
 public class AccountServiceImpl implements AccountService {
     private AccountRepository accountRepository;
     private AccountTypeRepository accountTypeRepository;
+    private CustomerRepository customerRepository;
+    // private SecurityContextHolder securityContextHolder;
+    // private Optional<SecurityContextHolder> securityContextHolder;
 
-    public AccountServiceImpl(AccountRepository accountRepository, AccountTypeRepository accountTypeRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, AccountTypeRepository accountTypeRepository,
+            CustomerRepository customerRepository) {
         this.accountRepository = accountRepository;
         this.accountTypeRepository = accountTypeRepository;
+        this.customerRepository = customerRepository;
+        // this.securityContextHolder = securityContextHolder;
     }
 
     @Override // TO DO - add validation: if customer id is exists in customer table
@@ -78,12 +91,27 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public ArrayList<Account> getAllAccounts() {
-        List<Account> allAccounts = accountRepository.findAll();
-        for (Account account : allAccounts) {
-            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
-            account.setAccountTypeName(savedAccountType.getAccountTypeName());
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        String username = authentication.getName();
+        Customers customer = customerRepository.findByCustomerEmail(username);
+        // List<Account> accounts = new ArrayList<>();
+        if (customer.getCustomerRole() == 1) {
+            List<Account> allAccounts = accountRepository.findAll();
+            for (Account account : allAccounts) {
+                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+                account.setAccountTypeName(savedAccountType.getAccountTypeName());
+            }
+            return (ArrayList<Account>) allAccounts;
+        } else {
+            List<Account> customerAccounts = accountRepository.findByCustomerId(customer.getCustomerId());
+            for (Account account : customerAccounts) {
+                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+                account.setAccountTypeName(savedAccountType.getAccountTypeName());
+            }
+            return (ArrayList<Account>) customerAccounts;
+
         }
-        return (ArrayList<Account>) allAccounts;
     }
 
     @Override // TO DO: add validation if the customer id is exist in customer id

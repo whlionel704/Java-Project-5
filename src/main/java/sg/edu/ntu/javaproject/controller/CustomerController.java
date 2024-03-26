@@ -21,7 +21,7 @@ import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.service.CustomerService;
 
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/api/customers")
 @Slf4j
 public class CustomerController {
     private CustomerService customerService;

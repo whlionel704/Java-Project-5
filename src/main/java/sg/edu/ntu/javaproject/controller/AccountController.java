@@ -21,7 +21,7 @@ import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.service.AccountService;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api/accounts")
 @Slf4j
 public class AccountController {
     private AccountService accountService;
@@ -58,7 +58,8 @@ public class AccountController {
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
-    //Lionel: Hendry may I ask u if we are searching for an account by the user id or are we searching for an account id by the user?
+    // Lionel: Hendry may I ask u if we are searching for an account by the user id
+    // or are we searching for an account id by the user?
     @GetMapping("/searchByCustomerId/{id}")
     public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {

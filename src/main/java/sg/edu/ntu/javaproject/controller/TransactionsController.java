@@ -23,4 +23,10 @@ public class TransactionsController {
         Transactions newTransaction = transactionsService.withdrawTransaction(transaction);
         return new ResponseEntity<>(newTransaction, HttpStatus.CREATED);
     }
+
+    @PostMapping({ "/deposit", "/deposit/" })
+    public ResponseEntity<Transactions> depositTransaction(@Valid @RequestBody Transactions transaction) {
+        Transactions newTransaction = transactionsService.depositTransaction(transaction);
+        return new ResponseEntity<>(newTransaction, HttpStatus.CREATED);
+    }
 }

@@ -53,17 +53,17 @@ public class CustomerServiceImpl implements CustomerService {
         Customers customerToUpdate = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
 
-        if (customerToUpdate.getCustomer_name() != null) {
-            customerToUpdate.setCustomer_name(customer.getCustomer_name());
+        if (customerToUpdate.getCustomerName() != null) {
+            customerToUpdate.setCustomerName(customer.getCustomerName());
         }
-        if (customerToUpdate.getCustomer_email() != null) {
-            customerToUpdate.setCustomer_email(customer.getCustomer_email());
+        if (customerToUpdate.getCustomerEmail() != null) {
+            customerToUpdate.setCustomerEmail(customer.getCustomerEmail());
         }
-        if (customerToUpdate.getCustomer_contact() != null) {
-            customerToUpdate.setCustomer_contact(customer.getCustomer_contact());
+        if (customerToUpdate.getCustomerContact() != null) {
+            customerToUpdate.setCustomerContact(customer.getCustomerContact());
         }
-        if (customerToUpdate.getCustomer_address() != null) {
-            customerToUpdate.setCustomer_address(customer.getCustomer_address());
+        if (customerToUpdate.getCustomerAddress() != null) {
+            customerToUpdate.setCustomerAddress(customer.getCustomerAddress());
         }
 
         return customerRepository.save(customerToUpdate);
