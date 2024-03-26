@@ -1,9 +1,9 @@
 package sg.edu.ntu.javaproject.Implementation;
 
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -95,7 +95,7 @@ public class AccountServiceImpl implements AccountService {
         Authentication authentication = securityContext.getAuthentication();
         String username = authentication.getName();
         Customers customer = customerRepository.findByCustomerEmail(username);
-        // List<Account> accounts = new ArrayList<>();
+
         if (customer.getCustomerRole() == 1) {
             List<Account> allAccounts = accountRepository.findAll();
             for (Account account : allAccounts) {
