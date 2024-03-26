@@ -2,11 +2,7 @@ package sg.edu.ntu.javaproject.service;
 
 import java.util.ArrayList;
 
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import sg.edu.ntu.javaproject.entity.Customers;
-
 
 public interface CustomerService {
 
@@ -20,6 +16,4 @@ public interface CustomerService {
 
     Customers updateCustomer(Integer id, Customers customer);
 
-    
 }
- 

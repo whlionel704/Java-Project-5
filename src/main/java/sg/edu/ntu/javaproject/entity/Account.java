@@ -13,11 +13,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = "account")
 public class Account {
     @Id
@@ -59,5 +61,12 @@ public class Account {
 
     @Transient
     private String accountTypeName;
+
+    public Account(Integer accountNo, Integer balance, Integer accountType, Integer customerId) {
+        this.accountNumber = accountNo;
+        this.balance = balance;
+        this.accountTypeId = accountType;
+        this.customerId = customerId;
+    }
 
 }

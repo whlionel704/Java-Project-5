@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import sg.edu.ntu.javaproject.entity.Transactions;
 
 public interface TransactionsService {
-    Transactions createTransaction(Transactions transaction);
+    Transactions withdrawTransaction(Transactions transaction);
 
     Transactions getTransactionsById(Integer id);
 
