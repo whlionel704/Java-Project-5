@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.service.AccountService;
@@ -33,7 +34,7 @@ public class AccountController {
     }
 
     @PostMapping({ "", "/" })
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) throws JsonProcessingException {
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) throws JsonProcessingException {
         Account newAccount = accountService.createAccount(account);
         String accountJson = objectMapper.writeValueAsString(newAccount);
         log.info("new account created: " + accountJson);
@@ -58,7 +59,8 @@ public class AccountController {
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
-    //Lionel: Hendry may I ask u if we are searching for an account by the user id or are we searching for an account id by the user?
+    // Lionel: Hendry may I ask u if we are searching for an account by the user id
+    // or are we searching for an account id by the user?
     @GetMapping("/searchByCustomerId/{id}")
     public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {
