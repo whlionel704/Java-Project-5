@@ -1,18 +1,16 @@
 package sg.edu.ntu.javaproject.entity;
 
-import org.springframework.context.annotation.Bean;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sg.edu.ntu.javaproject.service.BCryptPasswordEncoderService;
 
 @Getter
 @Setter
@@ -30,7 +28,8 @@ public class Customers {
     @Column(name = "customer_name")
     private String customerName;
 
-    @Column(name = "customer_email")
+    @Column(name = "customer_email", unique = true)
+    @NotBlank(message = "customer email is mandatory")
     private String customerEmail;
 
     @Column(name = "customer_contact")
@@ -43,6 +42,7 @@ public class Customers {
     private Integer customerRole;
 
     @Column(name = "password")
+    @NotBlank(message = "password is mandatory")
     private String password;
 
     public Customers(String name, String email, String contact, String address, String password, Integer customerRole) {

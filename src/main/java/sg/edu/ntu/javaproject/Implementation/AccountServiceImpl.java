@@ -1,9 +1,7 @@
 package sg.edu.ntu.javaproject.Implementation;
 
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -14,7 +12,7 @@ import sg.edu.ntu.javaproject.Exception.AccountNotFoundException;
 import sg.edu.ntu.javaproject.Exception.AccountNumberExistsException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsExistException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsNotExistException;
-import sg.edu.ntu.javaproject.Exception.NullException;
+import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.AccountType;
 import sg.edu.ntu.javaproject.entity.Customers;
@@ -28,42 +26,38 @@ public class AccountServiceImpl implements AccountService {
     private AccountRepository accountRepository;
     private AccountTypeRepository accountTypeRepository;
     private CustomerRepository customerRepository;
-    // private SecurityContextHolder securityContextHolder;
-    // private Optional<SecurityContextHolder> securityContextHolder;
 
     public AccountServiceImpl(AccountRepository accountRepository, AccountTypeRepository accountTypeRepository,
             CustomerRepository customerRepository) {
         this.accountRepository = accountRepository;
         this.accountTypeRepository = accountTypeRepository;
         this.customerRepository = customerRepository;
-        // this.securityContextHolder = securityContextHolder;
+    }
+
+    private Customers getCurrentCustomer() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        String username = authentication.getName();
+        return customerRepository.findByCustomerEmail(username);
     }
 
     @Override // TO DO - add validation: if customer id is exists in customer table
     public Account createAccount(Account account) {
-        if (account.getCustomerId() == null || account.getAccountTypeId() == null
-                || account.getAccountNumber() == null) {
-            StringBuilder nullValue = new StringBuilder();
-            if (account.getCustomerId() == null) {
-                nullValue.append("CustomerID, ");
-            }
-            if (account.getAccountTypeId() == null) {
-                nullValue.append("Account Type ID, ");
-            }
-            if (account.getAccountNumber() == null) {
-                nullValue.append("Account Number");
-            }
-            throw new NullException(nullValue);
-        }
+        // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
             throw new AccountNumberExistsException(account.getAccountNumber());
         }
+        // check if customer id is exist in customer table
+        customerRepository.findById(account.getCustomerId())
+                .orElseThrow(() -> new CustomerNotFoundException(account.getCustomerId()));
+        // check if customer id with account type id is already exist
         if (accountRepository.existByAccountType(account.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(account.getCustomerId(), account.getAccountTypeId());
         }
         if (account.getBalance() == null) {
             account.setBalance(0);
         }
+        // check if account type id is exist in account type table
         if (account.getAccountTypeId() == null || !accountTypeRepository.existsById(account.getAccountTypeId())) {
             throw new AccountTypeIsNotExistException(account.getAccountTypeId());
 
@@ -91,11 +85,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public ArrayList<Account> getAllAccounts() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication authentication = securityContext.getAuthentication();
-        String username = authentication.getName();
-        Customers customer = customerRepository.findByCustomerEmail(username);
-
+        Customers customer = getCurrentCustomer();
         if (customer.getCustomerRole() == 1) {
             List<Account> allAccounts = accountRepository.findAll();
             for (Account account : allAccounts) {
@@ -110,29 +100,41 @@ public class AccountServiceImpl implements AccountService {
                 account.setAccountTypeName(savedAccountType.getAccountTypeName());
             }
             return (ArrayList<Account>) customerAccounts;
-
         }
     }
 
-    @Override // TO DO: add validation if the customer id is exist in customer id
+    @Override
     public Account updateAccount(Integer id, Account account) {
+        // check if account id is exist in account table
         Account accountToUpdate = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
             throw new AccountNumberExistsException(account.getAccountNumber());
         }
+        // if accountype id not null and account type id different current account type
+        // id and custoemr id is null
+        // get custoemr id from account to update
+        // check if customer id with the new account type id is already exist
         if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
                 && account.getCustomerId() == null
                 && accountRepository.existByAccountType(accountToUpdate.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(accountToUpdate.getCustomerId(), account.getAccountTypeId());
         }
+        //// if accountype id not null and account type id different current account
+        //// type id and customer id not null
+        // get customer id from request body
+        // check if customer id with the new account type id is already exist
         if (account.getAccountTypeId() != null && account.getAccountTypeId() != accountToUpdate.getAccountTypeId()
                 && account.getCustomerId() != null &&
                 accountRepository.existByAccountType(account.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(account.getCustomerId(), account.getAccountTypeId());
         }
+        // check if account type id is exist in account type table
         if (account.getAccountTypeId() != null && !accountTypeRepository.existsById(account.getAccountTypeId())) {
             throw new AccountTypeIsNotExistException(account.getAccountTypeId());
         }
+        // if customer id not null and account type id not null
+        // check if customer id with account type id is exist
         if (account.getCustomerId() != null && account.getAccountTypeId() != null
                 && accountRepository.existByAccountType(account.getCustomerId(), account.getAccountTypeId())) {
             throw new AccountTypeIsExistException(account.getCustomerId(), account.getAccountTypeId());
@@ -154,6 +156,7 @@ public class AccountServiceImpl implements AccountService {
             accountToUpdate.setCustomerId(account.getCustomerId());
         }
         return accountRepository.save(accountToUpdate);
+
     }
 
     @Override

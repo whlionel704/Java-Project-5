@@ -9,6 +9,8 @@ public interface TransactionsService {
 
     Transactions depositTransaction(Transactions transaction);
 
+    Transactions transferTransaction(Integer accountNo, Transactions transaction);
+
     Transactions getTransactionsById(Integer id);
 
     ArrayList<Transactions> getAllTransactions();

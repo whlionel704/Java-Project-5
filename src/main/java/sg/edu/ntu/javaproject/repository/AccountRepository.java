@@ -21,4 +21,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByCustomerIdAndAccountTypeId(@Param("customerId") Integer customerId,
             @Param("accountTypeId") Integer accountTypeId);
 
+    Account findByAccountNumber(Integer accountNumber);
+
 }

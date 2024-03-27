@@ -28,10 +28,6 @@ public class MyUserDetails implements UserDetails {
         return customer.getPassword();
     }
 
-    // Implement other methods (authorities, account status etc.) based on your
-    // needs
-    // You can return empty collections or default values for now
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();

@@ -47,20 +47,20 @@ public class DataLoader {
         accountRepository.save(new Account(122, 1000, 1, 3));
         accountRepository.save(new Account(222, 1001, 2, 3));
         customerRepository.deleteAll();
-        Customers customer4 = new Customers("admin", "admin@email.com", "contact", "address", "admin1", 1);
-        Customers customer1 = new Customers("customer1", "customer1@email.com", "contact", "address", "password1", 2);
+        Customers customer1 = new Customers("admin", "admin@email.com", "contact", "address", "admin1", 1);
         Customers customer2 = new Customers("customer2", "customer2@email.com", "contact", "address", "password2", 2);
-        Customers customer3 = new Customers("customer2", "customer3@email.com", "contact", "address", "password3", 2);
+        Customers customer3 = new Customers("customer3", "customer3@email.com", "contact", "address", "password3", 2);
+        Customers customer4 = new Customers("customer4", "customer4@email.com", "contact", "address", "password4", 2);
 
-        customer4.setPassword(passwordEncoderService.encodePassword(customer4.getPassword()));
         customer1.setPassword(passwordEncoderService.encodePassword(customer1.getPassword()));
         customer2.setPassword(passwordEncoderService.encodePassword(customer2.getPassword()));
         customer3.setPassword(passwordEncoderService.encodePassword(customer3.getPassword()));
+        customer4.setPassword(passwordEncoderService.encodePassword(customer4.getPassword()));
 
-        customerRepository.save(customer4);
         customerRepository.save(customer1);
         customerRepository.save(customer2);
         customerRepository.save(customer3);
+        customerRepository.save(customer4);
 
     }
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,12 +29,14 @@ public class Account {
     private Integer id;
 
     @Column(name = "account_no")
+    @NotNull(message = "accountNumber is mandatory")
     private Integer accountNumber;
 
     @Column(name = "balance")
     private Integer balance;
 
     @Column(name = "account_type_id")
+    @NotNull(message = "accountTypeId is mandatory")
     private Integer accountTypeId;
 
     @Column(name = "created_date")
@@ -45,6 +48,7 @@ public class Account {
     private Date updatedDate;
 
     @Column(name = "customer_id")
+    @NotNull(message = "customerId is mandatory")
     private Integer customerId;
 
     // @ManyToOne

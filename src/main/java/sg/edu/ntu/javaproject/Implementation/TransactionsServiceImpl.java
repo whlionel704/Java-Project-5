@@ -1,14 +1,21 @@
 package sg.edu.ntu.javaproject.Implementation;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import sg.edu.ntu.javaproject.Exception.AccountNumberIsNotExistException;
 import sg.edu.ntu.javaproject.Exception.CustomerAndAccountNotFoundException;
 import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
 import sg.edu.ntu.javaproject.Exception.InsufficientBalanceException;
+import sg.edu.ntu.javaproject.Exception.NullException;
 import sg.edu.ntu.javaproject.entity.Account;
+import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.entity.Transactions;
 import sg.edu.ntu.javaproject.repository.AccountRepository;
 import sg.edu.ntu.javaproject.repository.CustomerRepository;
@@ -28,28 +35,41 @@ public class TransactionsServiceImpl implements TransactionsService {
         this.accountRepository = accountRepository;
     }
 
+    private Customers getCurrentCustomer() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        String username = authentication.getName();
+        return customerRepository.findByCustomerEmail(username);
+    }
+
     @Override
     public Transactions withdrawTransaction(Transactions transaction) {
+        Customers checkCustomer = getCurrentCustomer();
         // check if customerid with account type is exist
-        if (!accountRepository.existByAccountType(transaction.getCustomerId(), transaction.getAccountTypeId())) {
-            throw new CustomerAndAccountNotFoundException(transaction.getCustomerId(), transaction.getAccountTypeId());
+        if (!accountRepository.existByAccountType(checkCustomer.getCustomerId(), transaction.getAccountTypeId())) {
+            throw new CustomerAndAccountNotFoundException(checkCustomer.getCustomerId(),
+                    transaction.getAccountTypeId());
         }
         // check if customer have enough balance on their account type
         Optional<Account> optionalAccount = accountRepository
-                .findByCustomerIdAndAccountTypeId(transaction.getCustomerId(), transaction.getAccountTypeId());
+                .findByCustomerIdAndAccountTypeId(checkCustomer.getCustomerId(), transaction.getAccountTypeId());
         if (optionalAccount.isPresent()) {
             Account savedAccount = optionalAccount.get();
             if (savedAccount.getBalance() < transaction.getAmount()) {
                 throw new InsufficientBalanceException(savedAccount.getBalance(), transaction.getAmount());
             }
         } else
-            throw new CustomerAndAccountNotFoundException(transaction.getCustomerId(), transaction.getAccountTypeId());
+            throw new CustomerAndAccountNotFoundException(checkCustomer.getCustomerId(),
+                    transaction.getAccountTypeId());
         Account savedAccount = optionalAccount.get();
         int balanceBefore = savedAccount.getBalance();
         int balanceAfter = (balanceBefore - transaction.getAmount());
         transaction.setBalanceBefore(balanceBefore);
         transaction.setBalanceAfter(balanceAfter);
         transaction.setTransactionTypeId(2);
+        transaction.setSourceAccount(savedAccount.getAccountNumber());
+        transaction.setSourceCustomerId(savedAccount.getCustomerId());
+        // transaction.setDestinationCustomerId(checkCustomer.getCustomerId());
         savedAccount.setBalance(balanceAfter);
         accountRepository.save(savedAccount);
         return transactionsRepository.save(transaction);
@@ -58,29 +78,87 @@ public class TransactionsServiceImpl implements TransactionsService {
 
     @Override
     public Transactions depositTransaction(Transactions transaction) {
+        Customers checkCustomer = getCurrentCustomer();
         // check if customerid with account type is exist
-        if (!accountRepository.existByAccountType(transaction.getCustomerId(), transaction.getAccountTypeId())) {
-            throw new CustomerAndAccountNotFoundException(transaction.getCustomerId(), transaction.getAccountTypeId());
+        if (!accountRepository.existByAccountType(checkCustomer.getCustomerId(), transaction.getAccountTypeId())) {
+            throw new CustomerAndAccountNotFoundException(checkCustomer.getCustomerId(),
+                    transaction.getAccountTypeId());
         }
         Optional<Account> optionalAccount = accountRepository
-                .findByCustomerIdAndAccountTypeId(transaction.getCustomerId(), transaction.getAccountTypeId());
+                .findByCustomerIdAndAccountTypeId(checkCustomer.getCustomerId(), transaction.getAccountTypeId());
         if (!optionalAccount.isPresent())
-            throw new CustomerNotFoundException(transaction.getCustomerId());
+            throw new CustomerNotFoundException(checkCustomer.getCustomerId());
         Account savedAccount = optionalAccount.get();
         int balanceBefore = savedAccount.getBalance();
         int balanceAfter = (balanceBefore + transaction.getAmount());
         transaction.setBalanceBefore(balanceBefore);
         transaction.setBalanceAfter(balanceAfter);
         transaction.setTransactionTypeId(1);
+        // transaction.setSourceAccount(checkCustomer.getCustomerId());
+        transaction.setDestinationAccount(savedAccount.getAccountNumber());
+        transaction.setDestinationCustomerId(savedAccount.getCustomerId());
         savedAccount.setBalance(balanceAfter);
         accountRepository.save(savedAccount);
         return transactionsRepository.save(transaction);
     }
 
     @Override
-    public ArrayList<Transactions> getAllTransactions() {
+    public Transactions transferTransaction(Integer accountNo, Transactions transaction) {
+        Customers checkCustomer = getCurrentCustomer();
+        // check if account number is exist
+        if (!accountRepository.existsByAccountNumber(accountNo))
+            throw new AccountNumberIsNotExistException(accountNo);
+        // check mandatory paramter
+        if (transaction.getAccountTypeId() == null || transaction.getAmount() == null)
+            throw new NullException("accountTypeId and amount is mandatory");
+        // check if source customer id and account type is exist
+        if (!accountRepository.existByAccountType(checkCustomer.getCustomerId(), transaction.getAccountTypeId()))
+            throw new CustomerAndAccountNotFoundException(checkCustomer.getCustomerId(),
+                    transaction.getAccountTypeId());
+        // get the source account details
+        Optional<Account> optionalAccount = accountRepository
+                .findByCustomerIdAndAccountTypeId(checkCustomer.getCustomerId(), transaction.getAccountTypeId());
+        if (optionalAccount.isPresent()) {
+            Account sourceAccount = optionalAccount.get();
+            // check if the balance greater than the amount
+            if (sourceAccount.getBalance() < transaction.getAmount())
+                throw new InsufficientBalanceException(sourceAccount.getBalance(), transaction.getAmount());
+        } else
+            throw new CustomerNotFoundException(checkCustomer.getCustomerId());
+        Account sourceAccount = optionalAccount.get();
+        Account destinationAccount = accountRepository.findByAccountNumber(accountNo);
+        int sourceBalanceBefore = sourceAccount.getBalance();
+        int sourceBalanceAfter = sourceBalanceBefore - (transaction.getAmount());
+        int destinationBalance = destinationAccount.getBalance() + transaction.getAmount();
+        sourceAccount.setBalance(sourceBalanceAfter);
+        destinationAccount.setBalance(destinationBalance);
+        transaction.setBalanceBefore(sourceBalanceBefore);
+        transaction.setBalanceAfter(sourceBalanceAfter);
+        transaction.setTransactionTypeId(3);
+        transaction.setSourceAccount(sourceAccount.getAccountNumber());
+        transaction.setSourceCustomerId(sourceAccount.getCustomerId());
+        transaction.setDestinationCustomerId(destinationAccount.getCustomerId());
+        transaction.setDestinationAccount(accountNo);
+        accountRepository.save(sourceAccount);
+        accountRepository.save(destinationAccount);
+        return transactionsRepository.save(transaction);
+    }
 
-        return null;
+    @Override
+    public ArrayList<Transactions> getAllTransactions() {
+        Customers checkCustomer = getCurrentCustomer();
+        List<Transactions> transactions;
+        if (checkCustomer.getCustomerRole() == 1) {
+            transactions = transactionsRepository.findAll();
+        } else {
+            transactions = transactionsRepository.findByDestinationCustomerId(checkCustomer.getCustomerId());
+            List<Transactions> sourceTransactions = transactionsRepository
+                    .findBySourceCustomerId(checkCustomer.getCustomerId());
+            if (sourceTransactions != null) {
+                transactions.addAll(sourceTransactions);
+            }
+        }
+        return (ArrayList<Transactions>) transactions;
     }
 
     @Override
