@@ -32,7 +32,6 @@ public class CustomerServiceImpl implements CustomerService{
 
     @Override
     public ArrayList<Customers> getAllCustomers() {
-        // TODO Auto-generated method stub
         List<Customers> allCustomers = customerRepository.findAll();
         // throw new UnsupportedOperationException("Unimplemented method 'getAllCustomers'");
         return (ArrayList<Customers>) allCustomers;

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.entity.Transactions;
 import sg.edu.ntu.javaproject.service.TransactionsService;
 
@@ -35,8 +38,18 @@ public class TransactionController {
         return new ResponseEntity<>(allTransactions, HttpStatus.OK);
     }
 
-    //get transaction by id
+    @GetMapping({ "/{id}", "/{id}/" })
+    public ResponseEntity<Transactions> getTransactionById(@PathVariable Integer id) throws JsonProcessingException{
+        Transactions transaction = transactionsService.getTransactionById(id);
+        String transactionJson = objectMapper.writeValueAsString(transaction);
+        log.info("Retrieved Transaction By Id : "+ transactionJson);
+        return new ResponseEntity<>(transaction, HttpStatus.OK);
+    }
 
-    //delete transaction by id
+    @DeleteMapping({"/{id}", "/{id}/"})
+    public ResponseEntity<Transactions> deleteTransactionById(@PathVariable Integer id) throws JsonProcessingException{
+        transactionsService.deleteTransactionById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }

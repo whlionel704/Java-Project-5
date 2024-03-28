@@ -7,9 +7,9 @@ import sg.edu.ntu.javaproject.entity.Transactions;
 public interface TransactionsService {
     Transactions createTransaction(Transactions transaction);
 
-    Transactions getTransactionsById(Integer id);
+    Transactions getTransactionById(Integer id);
+
+    void deleteTransactionById(Integer id);
 
     ArrayList<Transactions> getAllTransactions();
-
-    ArrayList<Transactions> getTransactionsByCustomerId();
 }
