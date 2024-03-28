@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.service.AccountService;
@@ -33,7 +34,7 @@ public class AccountController {
     }
 
     @PostMapping({ "", "/" })
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) throws JsonProcessingException {
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) throws JsonProcessingException {
         Account newAccount = accountService.createAccount(account);
         String accountJson = objectMapper.writeValueAsString(newAccount);
         log.info("new account created: " + accountJson);
@@ -49,38 +50,39 @@ public class AccountController {
         return new ResponseEntity<>(allAccounts, HttpStatus.OK);
     }
 
-    @GetMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) throws JsonProcessingException {
-        Account accountById = accountService.getAccountById(id);
+    @GetMapping({ "/{accountId}", "/{accountId}/" })
+    public ResponseEntity<Account> getAccountById(@PathVariable Integer accountId) throws JsonProcessingException {
+        Account accountById = accountService.getAccountById(accountId);
         String accountJson = objectMapper.writeValueAsString(accountById);
-        log.info("search account by account id " + id);
+        log.info("search account by account id " + accountId);
         log.info("account details: " + accountJson);
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
-    //Lionel: Hendry may I ask u if we are searching for an account by the user id or are we searching for an account id by the user?
-    @GetMapping("/searchByCustomerId/{id}")
-    public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer id)
+    // Lionel: Hendry may I ask u if we are searching for an account by the user id
+    // or are we searching for an account id by the user?
+    @GetMapping("/searchByCustomerId/{accountId}")
+    public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer accountId)
             throws JsonProcessingException {
-        ArrayList<Account> accountList = accountService.getAccountByCustomerId(id);
+        ArrayList<Account> accountList = accountService.getAccountByCustomerId(accountId);
         String accountJson = objectMapper.writeValueAsString(accountList);
-        log.info("search accounts   by customer id: " + id);
+        log.info("search accounts   by customer id: " + accountId);
         log.info("account list: " + accountJson);
         return new ResponseEntity<>(accountList, HttpStatus.OK);
     }
 
-    @DeleteMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> deleteAccountById(@PathVariable Integer id) {
-        accountService.deleteAccountById(id);
+    @DeleteMapping({ "/{accountId}", "/{accountId}/" })
+    public ResponseEntity<Account> deleteAccountById(@PathVariable Integer accountId) {
+        accountService.deleteAccountById(accountId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> updateAccountById(@PathVariable Integer id, @RequestBody Account account)
+    @PutMapping({ "/{accountId}", "/{accountId}/" })
+    public ResponseEntity<Account> updateAccountById(@PathVariable Integer accountId, @RequestBody Account account)
             throws JsonProcessingException {
-        Account updatedAccount = accountService.updateAccount(id, account);
+        Account updatedAccount = accountService.updateAccount(accountId, account);
         String accountJson = objectMapper.writeValueAsString(updatedAccount);
-        log.info("updating account id: " + id);
+        log.info("updating account id: " + accountId);
         log.info("new account details: " + accountJson);
         return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
     }
