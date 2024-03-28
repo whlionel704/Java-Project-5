@@ -9,9 +9,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import sg.edu.ntu.javaproject.Exception.AccountNotFoundException;
 import sg.edu.ntu.javaproject.Exception.AccountNumberIsNotExistException;
 import sg.edu.ntu.javaproject.Exception.CustomerAndAccountNotFoundException;
 import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
+import sg.edu.ntu.javaproject.Exception.ForbiddenAccessException;
 import sg.edu.ntu.javaproject.Exception.InsufficientBalanceException;
 import sg.edu.ntu.javaproject.Exception.NullException;
 import sg.edu.ntu.javaproject.entity.Account;
@@ -150,27 +152,56 @@ public class TransactionsServiceImpl implements TransactionsService {
         List<Transactions> transactions;
         if (checkCustomer.getCustomerRole() == 1) {
             transactions = transactionsRepository.findAll();
+            return (ArrayList<Transactions>) transactions;
         } else {
             transactions = transactionsRepository.findByDestinationCustomerId(checkCustomer.getCustomerId());
             List<Transactions> sourceTransactions = transactionsRepository
                     .findBySourceCustomerId(checkCustomer.getCustomerId());
             if (sourceTransactions != null) {
-                transactions.addAll(sourceTransactions);
+                for (Transactions sourceTransaction : sourceTransactions) {
+                    if (!transactions.contains(sourceTransaction)) {
+                        transactions.add(sourceTransaction);
+                    }
+                }
             }
+            return (ArrayList<Transactions>) transactions;
         }
-        return (ArrayList<Transactions>) transactions;
     }
 
     @Override
-    public ArrayList<Transactions> getTransactionsByCustomerId() {
-
-        return null;
+    public ArrayList<Transactions> getTransactionsByCustomerId(Integer id) {
+        List<Transactions> transactions;
+        Customers checkCustomer = getCurrentCustomer();
+        if (checkCustomer.getCustomerRole() == 1
+                || (checkCustomer.getCustomerRole() == 2 && checkCustomer.getCustomerId().equals(id))) {
+            transactions = transactionsRepository.findByDestinationCustomerId(id);
+            List<Transactions> sourceTransactions = transactionsRepository
+                    .findBySourceCustomerId(id);
+            if (sourceTransactions != null) {
+                for (Transactions sourceTransaction : sourceTransactions) {
+                    if (!transactions.contains(sourceTransaction)) {
+                        transactions.add(sourceTransaction);
+                    }
+                }
+            }
+            return (ArrayList<Transactions>) transactions;
+        } else
+            throw new ForbiddenAccessException();
     }
 
     @Override
     public Transactions getTransactionsById(Integer id) {
-
-        return null;
+        Customers checkCustomer = getCurrentCustomer();
+        Transactions transaction = transactionsRepository.findById(id)
+                .orElseThrow(() -> new AccountNotFoundException(id));
+        if (checkCustomer.getCustomerRole() == 1) {
+            return transaction;
+        } else if (transaction.getDestinationCustomerId() == checkCustomer.getCustomerId()
+                || transaction.getSourceCustomerId() == checkCustomer.getCustomerId()) {
+            return transaction;
+        } else {
+            throw new ForbiddenAccessException();
+        }
     }
 
 }

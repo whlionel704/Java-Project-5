@@ -10,4 +10,5 @@ public interface TransactionsRepository extends JpaRepository<Transactions, Inte
     ArrayList<Transactions> findBySourceCustomerId(Integer id);
 
     ArrayList<Transactions> findByDestinationCustomerId(Integer id);
+
 }

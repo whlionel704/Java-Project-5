@@ -63,30 +63,22 @@ public class AccountController {
     }
 
     @GetMapping({ "/{id}", "/{id}/" })
-    // @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAccountById(@PathVariable Integer id) throws JsonProcessingException {
-        if (isAdmin()) {
-            Account accountById = accountService.getAccountById(id);
-            String accountJson = objectMapper.writeValueAsString(accountById);
-            log.info("search account by account id " + id);
-            log.info("account details: " + accountJson);
-            return new ResponseEntity<>(accountById, HttpStatus.OK);
-        } else
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
+    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) throws JsonProcessingException {
+        Account accountById = accountService.getAccountById(id);
+        String accountJson = objectMapper.writeValueAsString(accountById);
+        log.info("search account by account id " + id);
+        log.info("account details: " + accountJson);
+        return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
-    @GetMapping("/searchByCustomerId/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/customer/{id}")
     public ResponseEntity<?> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {
-        if (isAdmin()) {
-            ArrayList<Account> accountList = accountService.getAccountByCustomerId(id);
-            String accountJson = objectMapper.writeValueAsString(accountList);
-            log.info("search accounts   by customer id: " + id);
-            log.info("account list: " + accountJson);
-            return new ResponseEntity<>(accountList, HttpStatus.OK);
-        } else
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
+        ArrayList<Account> accountList = accountService.getAccountByCustomerId(id);
+        String accountJson = objectMapper.writeValueAsString(accountList);
+        log.info("search accounts   by customer id: " + id);
+        log.info("account list: " + accountJson);
+        return new ResponseEntity<>(accountList, HttpStatus.OK);
     }
 
     @DeleteMapping({ "/{id}", "/{id}/" })

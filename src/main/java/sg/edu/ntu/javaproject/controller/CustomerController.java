@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
+//import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,15 +65,12 @@ public class CustomerController {
     }
 
     @GetMapping({ "/{id}", "/{id}/" })
-    // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getCustomerById(@PathVariable Integer id) throws JsonProcessingException {
-        if (isAdmin()) {
-            Customers customer = customerService.getCustomerById(id);
-            String customerJson = objectMapper.writeValueAsString(customer);
-            log.info("Retrieved Customer By Id : " + customerJson);
-            return new ResponseEntity<>(customer, HttpStatus.OK);
-        } else
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
+
+        Customers customer = customerService.getCustomerById(id);
+        String customerJson = objectMapper.writeValueAsString(customer);
+        log.info("Retrieved Customer By Id : " + customerJson);
+        return new ResponseEntity<>(customer, HttpStatus.OK);
     }
 
     @DeleteMapping({ "/{id}", "/{id}/" })

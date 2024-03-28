@@ -13,6 +13,7 @@ import sg.edu.ntu.javaproject.Exception.AccountNumberExistsException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsExistException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsNotExistException;
 import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
+import sg.edu.ntu.javaproject.Exception.ForbiddenAccessException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.AccountType;
 import sg.edu.ntu.javaproject.entity.Customers;
@@ -41,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
         return customerRepository.findByCustomerEmail(username);
     }
 
-    @Override // TO DO - add validation: if customer id is exists in customer table
+    @Override
     public Account createAccount(Account account) {
         // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
@@ -80,27 +81,28 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getAccountById(Integer id) {
-        return accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        Customers checkCustomer = getCurrentCustomer();
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        if (checkCustomer.getCustomerRole() == 1 || checkCustomer.getCustomerId() == account.getCustomerId())
+            return account;
+        else
+            throw new ForbiddenAccessException();
     }
 
     @Override
     public ArrayList<Account> getAllAccounts() {
         Customers customer = getCurrentCustomer();
+        List<Account> accounts;
         if (customer.getCustomerRole() == 1) {
-            List<Account> allAccounts = accountRepository.findAll();
-            for (Account account : allAccounts) {
-                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
-                account.setAccountTypeName(savedAccountType.getAccountTypeName());
-            }
-            return (ArrayList<Account>) allAccounts;
+            accounts = accountRepository.findAll();
         } else {
-            List<Account> customerAccounts = accountRepository.findByCustomerId(customer.getCustomerId());
-            for (Account account : customerAccounts) {
-                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
-                account.setAccountTypeName(savedAccountType.getAccountTypeName());
-            }
-            return (ArrayList<Account>) customerAccounts;
+            accounts = accountRepository.findByCustomerId(customer.getCustomerId());
         }
+        for (Account account : accounts) {
+            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+            account.setAccountTypeName(savedAccountType.getAccountTypeName());
+        }
+        return (ArrayList<Account>) accounts;
     }
 
     @Override
@@ -162,13 +164,18 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public ArrayList<Account> getAccountByCustomerId(Integer id) {
         List<Account> allAccounts = accountRepository.findByCustomerId(id);
-        if (allAccounts.isEmpty()) {
-            throw new AccountNotFoundException(id);
-        }
-        for (Account account : allAccounts) {
-            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
-            account.setAccountTypeName(savedAccountType.getAccountTypeName());
-        }
-        return (ArrayList<Account>) allAccounts;
+        Customers checkCustomer = getCurrentCustomer();
+        if (checkCustomer.getCustomerRole() == 1
+                || (checkCustomer.getCustomerRole() == 2 && checkCustomer.getCustomerId().equals(id))) {
+            if (allAccounts.isEmpty()) {
+                throw new AccountNotFoundException(id);
+            }
+            for (Account account : allAccounts) {
+                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+                account.setAccountTypeName(savedAccountType.getAccountTypeName());
+            }
+            return (ArrayList<Account>) allAccounts;
+        } else
+            throw new ForbiddenAccessException();
     }
 }

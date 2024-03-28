@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
 import sg.edu.ntu.javaproject.Exception.EmailIsExistException;
@@ -24,13 +24,11 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerRepository customerRepository;
 
     private BCryptPasswordEncoder passwordEncoder;
-    private ObjectMapper objectMapper;
+    // private ObjectMapper objectMapper;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository, BCryptPasswordEncoder passwordEncoder,
-            ObjectMapper objectMapper) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, BCryptPasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
-        this.objectMapper = objectMapper;
     }
 
     private Customers getCurrentCustomer() {
@@ -71,7 +69,13 @@ public class CustomerServiceImpl implements CustomerService {
         Customers customer = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
         customer.setPassword("*****");
-        return customer;
+        Customers checkCustomer = getCurrentCustomer();
+        if (checkCustomer.getCustomerRole() == 1)
+            return customer;
+        else if (checkCustomer.getCustomerId() == customer.getCustomerId())
+            return customer;
+        else
+            throw new ForbiddenAccessException();
     }
 
     @Override

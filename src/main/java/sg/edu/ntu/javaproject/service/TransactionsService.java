@@ -15,5 +15,5 @@ public interface TransactionsService {
 
     ArrayList<Transactions> getAllTransactions();
 
-    ArrayList<Transactions> getTransactionsByCustomerId();
+    ArrayList<Transactions> getTransactionsByCustomerId(Integer Id);
 }
