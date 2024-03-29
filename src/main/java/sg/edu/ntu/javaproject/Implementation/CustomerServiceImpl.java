@@ -65,6 +65,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public Customers getCustomerById(Integer customer_id) {
         Customers customer = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
@@ -79,6 +80,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public void deleteCustomerById(Integer customer_id) {
         Customers customer = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
@@ -86,6 +88,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public Customers updateCustomer(Integer customer_id, Customers customer) {
         Customers checkCustomer = getCurrentCustomer();
         Customers customerToUpdate;
