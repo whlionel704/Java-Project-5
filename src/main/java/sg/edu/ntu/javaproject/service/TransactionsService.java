@@ -5,11 +5,17 @@ import java.util.ArrayList;
 import sg.edu.ntu.javaproject.entity.Transactions;
 
 public interface TransactionsService {
-    Transactions createTransaction(Transactions transaction);
+    Transactions withdrawTransaction(Transactions transaction);
+
+    Transactions depositTransaction(Transactions transaction);
+
+    Transactions transferTransaction(Integer accountNo, Transactions transaction);
 
     Transactions getTransactionById(Integer id);
 
     void deleteTransactionById(Integer id);
 
     ArrayList<Transactions> getAllTransactions();
+
+    ArrayList<Transactions> getTransactionsByCustomerId(Integer Id);
 }

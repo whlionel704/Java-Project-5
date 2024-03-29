@@ -3,6 +3,9 @@ package sg.edu.ntu.javaproject.Implementation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import sg.edu.ntu.javaproject.Exception.AccountNotFoundException;
@@ -10,9 +13,10 @@ import sg.edu.ntu.javaproject.Exception.AccountNumberExistsException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsExistException;
 import sg.edu.ntu.javaproject.Exception.AccountTypeIsNotExistException;
 import sg.edu.ntu.javaproject.Exception.CustomerNotFoundException;
-//import sg.edu.ntu.javaproject.Exception.NullException;
+import sg.edu.ntu.javaproject.Exception.ForbiddenAccessException;
 import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.AccountType;
+import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.repository.AccountRepository;
 import sg.edu.ntu.javaproject.repository.AccountTypeRepository;
 import sg.edu.ntu.javaproject.repository.CustomerRepository;
@@ -31,7 +35,15 @@ public class AccountServiceImpl implements AccountService {
         this.customerRepository = customerRepository;
     }
 
+    private Customers getCurrentCustomer() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        String username = authentication.getName();
+        return customerRepository.findByCustomerEmail(username);
+    }
+
     @Override
+    @SuppressWarnings(value = { "null" })
     public Account createAccount(Account account) {
         // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
@@ -61,6 +73,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public void deleteAccountById(Integer id) {
         if (!accountRepository.existsById(id)) {
             throw new AccountNotFoundException(id);
@@ -69,23 +82,40 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public Account getAccountById(Integer id) {
-        return accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        Customers checkCustomer = getCurrentCustomer();
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
+        if (checkCustomer.getCustomerRole() == 1 || checkCustomer.getCustomerId() == account.getCustomerId())
+            return account;
+        else
+            throw new ForbiddenAccessException();
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public ArrayList<Account> getAllAccounts() {
-        List<Account> allAccounts = accountRepository.findAll();
-        for (Account account : allAccounts) {
+        Customers customer = getCurrentCustomer();
+        List<Account> accounts;
+        if (customer.getCustomerRole() == 1) {
+            accounts = accountRepository.findAll();
+        } else {
+            accounts = accountRepository.findByCustomerId(customer.getCustomerId());
+        }
+        for (Account account : accounts) {
             AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
             account.setAccountTypeName(savedAccountType.getAccountTypeName());
         }
-        return (ArrayList<Account>) allAccounts;
+        return (ArrayList<Account>) accounts;
     }
 
-    @Override // TO DO: add validation if the customer id is exist in customer id
+    @Override
+    @SuppressWarnings(value = { "null" })
     public Account updateAccount(Integer id, Account account) {
         // check if account id is exist in account table
+        if (account.getCustomerId() != null && !customerRepository.findById(account.getCustomerId()).isPresent()) {
+            throw new CustomerNotFoundException(account.getCustomerId());
+        }
         Account accountToUpdate = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
         // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
@@ -136,18 +166,25 @@ public class AccountServiceImpl implements AccountService {
             accountToUpdate.setCustomerId(account.getCustomerId());
         }
         return accountRepository.save(accountToUpdate);
+
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public ArrayList<Account> getAccountByCustomerId(Integer id) {
         List<Account> allAccounts = accountRepository.findByCustomerId(id);
-        if (allAccounts.isEmpty()) {
-            throw new AccountNotFoundException(id);
-        }
-        for (Account account : allAccounts) {
-            AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
-            account.setAccountTypeName(savedAccountType.getAccountTypeName());
-        }
-        return (ArrayList<Account>) allAccounts;
+        Customers checkCustomer = getCurrentCustomer();
+        if (checkCustomer.getCustomerRole() == 1
+                || (checkCustomer.getCustomerRole() == 2 && checkCustomer.getCustomerId().equals(id))) {
+            if (allAccounts.isEmpty()) {
+                throw new AccountNotFoundException(id);
+            }
+            for (Account account : allAccounts) {
+                AccountType savedAccountType = accountTypeRepository.findById(account.getAccountTypeId()).get();
+                account.setAccountTypeName(savedAccountType.getAccountTypeName());
+            }
+            return (ArrayList<Account>) allAccounts;
+        } else
+            throw new ForbiddenAccessException();
     }
 }

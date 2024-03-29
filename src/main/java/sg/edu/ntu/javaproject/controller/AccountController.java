@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +24,7 @@ import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.service.AccountService;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api/accounts")
 @Slf4j
 public class AccountController {
     private AccountService accountService;
@@ -33,12 +35,22 @@ public class AccountController {
         this.objectMapper = objectMapper;
     }
 
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ADMIN"));
+    }
+
     @PostMapping({ "", "/" })
-    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) throws JsonProcessingException {
-        Account newAccount = accountService.createAccount(account);
-        String accountJson = objectMapper.writeValueAsString(newAccount);
-        log.info("new account created: " + accountJson);
-        return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
+    // @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createAccount(@Valid @RequestBody Account account) throws JsonProcessingException {
+        if (isAdmin()) {
+            Account newAccount = accountService.createAccount(account);
+            String accountJson = objectMapper.writeValueAsString(newAccount);
+            log.info("new account created: " + accountJson);
+            return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
+        } else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
     }
 
     @GetMapping({ "", "/" })
@@ -59,10 +71,8 @@ public class AccountController {
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }
 
-    // Lionel: Hendry may I ask u if we are searching for an account by the user id
-    // or are we searching for an account id by the user?
-    @GetMapping("/searchByCustomerId/{accountId}")
-    public ResponseEntity<ArrayList<Account>> searchByCustomerId(@PathVariable Integer accountId)
+    @GetMapping("/customer/{id}")
+    public ResponseEntity<?> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {
         ArrayList<Account> accountList = accountService.getAccountByCustomerId(accountId);
         String accountJson = objectMapper.writeValueAsString(accountList);
@@ -71,20 +81,27 @@ public class AccountController {
         return new ResponseEntity<>(accountList, HttpStatus.OK);
     }
 
-    @DeleteMapping({ "/{accountId}", "/{accountId}/" })
-    public ResponseEntity<Account> deleteAccountById(@PathVariable Integer accountId) {
-        accountService.deleteAccountById(accountId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @DeleteMapping({ "/{id}", "/{id}/" })
+    // @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteAccountById(@PathVariable Integer id) {
+        if (isAdmin()) {
+            accountService.deleteAccountById(id);
+            return ResponseEntity.status(HttpStatus.OK).body("account id: " + id + " has been deleted");
+        } else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
     }
 
-    @PutMapping({ "/{accountId}", "/{accountId}/" })
-    public ResponseEntity<Account> updateAccountById(@PathVariable Integer accountId, @RequestBody Account account)
+    @PutMapping({ "/{id}", "/{id}/" })
+    // @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateAccountById(@PathVariable Integer id, @RequestBody Account account)
             throws JsonProcessingException {
-        Account updatedAccount = accountService.updateAccount(accountId, account);
-        String accountJson = objectMapper.writeValueAsString(updatedAccount);
-        log.info("updating account id: " + accountId);
-        log.info("new account details: " + accountJson);
-        return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
+        if (isAdmin()) {
+            Account updatedAccount = accountService.updateAccount(id, account);
+            String accountJson = objectMapper.writeValueAsString(updatedAccount);
+            log.info("updating account id: " + id);
+            log.info("new account details: " + accountJson);
+            return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
+        } else
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("access denied!");
     }
-
 }
