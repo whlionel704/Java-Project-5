@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import sg.edu.ntu.javaproject.entity.Account;
 import sg.edu.ntu.javaproject.entity.Customers;
 import sg.edu.ntu.javaproject.service.CustomerService;
 
@@ -32,12 +31,10 @@ import sg.edu.ntu.javaproject.service.CustomerService;
 public class CustomerController {
     private CustomerService customerService;
     private ObjectMapper objectMapper;
-    private AccountService accountService;
 
     public CustomerController(CustomerService customerService, ObjectMapper objectMapper) {
         this.customerService = customerService;
         this.objectMapper = objectMapper;
-        this.accountService = accountService;
     }
 
     private boolean isAdmin() {

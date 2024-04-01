@@ -13,8 +13,6 @@ public interface TransactionsService {
 
     Transactions getTransactionById(Integer id);
 
-    void deleteTransactionById(Integer id);
-
     ArrayList<Transactions> getAllTransactions();
 
     ArrayList<Transactions> getTransactionsByCustomerId(Integer Id);

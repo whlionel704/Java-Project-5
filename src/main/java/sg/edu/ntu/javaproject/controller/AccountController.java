@@ -74,9 +74,9 @@ public class AccountController {
     @GetMapping("/customer/{id}")
     public ResponseEntity<?> searchByCustomerId(@PathVariable Integer id)
             throws JsonProcessingException {
-        ArrayList<Account> accountList = accountService.getAccountByCustomerId(accountId);
+        ArrayList<Account> accountList = accountService.getAccountByCustomerId(id);
         String accountJson = objectMapper.writeValueAsString(accountList);
-        log.info("search accounts   by customer id: " + accountId);
+        log.info("search accounts   by customer id: " + id);
         log.info("account list: " + accountJson);
         return new ResponseEntity<>(accountList, HttpStatus.OK);
     }

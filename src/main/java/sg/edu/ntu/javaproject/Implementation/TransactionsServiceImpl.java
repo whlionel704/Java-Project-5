@@ -191,7 +191,7 @@ public class TransactionsServiceImpl implements TransactionsService {
 
     @Override
     @SuppressWarnings(value = { "null" })
-    public Transactions getTransactionsById(Integer id) {
+    public Transactions getTransactionById(Integer id) {
         Customers checkCustomer = getCurrentCustomer();
         Transactions transaction = transactionsRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException(id));
