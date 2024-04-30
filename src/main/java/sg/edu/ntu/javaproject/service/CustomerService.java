@@ -12,6 +12,8 @@ public interface CustomerService {
 
     Customers getCustomerById(Integer customer_id);
 
+    Customers getCustomerByIdNoPassword(Integer customer_id);
+
     void deleteCustomerById(Integer customer_id);
 
     Customers updateCustomer(Integer id, Customers customer);

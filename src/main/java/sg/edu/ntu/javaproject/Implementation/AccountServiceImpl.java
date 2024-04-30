@@ -43,7 +43,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public Account createAccount(Account account) {
         // check if account number is already exist
         if (accountRepository.existsByAccountNumber(account.getAccountNumber())) {
@@ -73,7 +72,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public void deleteAccountById(Integer id) {
         if (!accountRepository.existsById(id)) {
             throw new AccountNotFoundException(id);
@@ -82,7 +80,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public Account getAccountById(Integer id) {
         Customers checkCustomer = getCurrentCustomer();
         Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException(id));
@@ -93,7 +90,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public ArrayList<Account> getAllAccounts() {
         Customers customer = getCurrentCustomer();
         List<Account> accounts;
@@ -110,7 +106,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public Account updateAccount(Integer id, Account account) {
         // check if account id is exist in account table
         if (account.getCustomerId() != null && !customerRepository.findById(account.getCustomerId()).isPresent()) {
@@ -170,7 +165,6 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public ArrayList<Account> getAccountByCustomerId(Integer id) {
         List<Account> allAccounts = accountRepository.findByCustomerId(id);
         Customers checkCustomer = getCurrentCustomer();
