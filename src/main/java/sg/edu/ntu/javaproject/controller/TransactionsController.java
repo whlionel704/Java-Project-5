@@ -93,19 +93,20 @@ public class TransactionsController {
 
     @GetMapping({ "/{id}", "/{id}/" })
     public ResponseEntity<Transactions> getTransactionById(@PathVariable Integer id) throws JsonProcessingException {
-        Transactions transaction = transactionsService.getTransactionsById(id);
+        Transactions transaction = transactionsService.getTransactionById(id);
         String transactionJson = objectMapper.writeValueAsString(transaction);
         log.info("retreiving transactions with id: " + id);
         log.info("transaction details: " + transactionJson);
         return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
-    @GetMapping({"/customer/{id}","/customer/{id}/"})
-    public ResponseEntity<ArrayList<Transactions>> getTransactionsByCustomerId(@PathVariable Integer id) throws JsonProcessingException {
+    @GetMapping({ "/customer/{id}", "/customer/{id}/" })
+    public ResponseEntity<ArrayList<Transactions>> getTransactionsByCustomerId(@PathVariable Integer id)
+            throws JsonProcessingException {
         ArrayList<Transactions> transactions = transactionsService.getTransactionsByCustomerId(id);
         String transactionJson = objectMapper.writeValueAsString(transactions);
-        log.info("retreiving transactions for customer id: "+id);
-        log.info("transactions list: "+transactionJson);
+        log.info("retreiving transactions for customer id: " + id);
+        log.info("transactions list: " + transactionJson);
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 }

@@ -11,7 +11,7 @@ public interface TransactionsService {
 
     Transactions transferTransaction(Integer accountNo, Transactions transaction);
 
-    Transactions getTransactionsById(Integer id);
+    Transactions getTransactionById(Integer id);
 
     ArrayList<Transactions> getAllTransactions();
 
