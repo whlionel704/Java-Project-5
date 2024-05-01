@@ -190,6 +190,7 @@ public class TransactionsServiceImpl implements TransactionsService {
     }
 
     @Override
+    @SuppressWarnings(value = { "null" })
     public Transactions getTransactionsById(Integer id) {
         Customers checkCustomer = getCurrentCustomer();
         Transactions transaction = transactionsRepository.findById(id)

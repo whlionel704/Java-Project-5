@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import sg.edu.ntu.javaproject.entity.Account;
 
 public interface AccountService {
-    Account createAccount(Account account);
+    Account createAccount(Account account); 
 
     Account getAccountById(Integer id);
 
