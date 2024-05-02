@@ -62,11 +62,11 @@ public class AccountController {
         return new ResponseEntity<>(allAccounts, HttpStatus.OK);
     }
 
-    @GetMapping({ "/{id}", "/{id}/" })
-    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) throws JsonProcessingException {
-        Account accountById = accountService.getAccountById(id);
+    @GetMapping({ "/{accountId}", "/{accountId}/" })
+    public ResponseEntity<Account> getAccountById(@PathVariable Integer accountId) throws JsonProcessingException {
+        Account accountById = accountService.getAccountById(accountId);
         String accountJson = objectMapper.writeValueAsString(accountById);
-        log.info("search account by account id " + id);
+        log.info("search account by account id " + accountId);
         log.info("account details: " + accountJson);
         return new ResponseEntity<>(accountById, HttpStatus.OK);
     }

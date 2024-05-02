@@ -3,6 +3,7 @@ package sg.edu.ntu.javaproject.Implementation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private CustomerRepository customerRepository;
 
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
     // private ObjectMapper objectMapper;
 
@@ -43,7 +45,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setCustomerRole(2);
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         customerRepository.save(customer);
-        customer.setPassword("*****");
+        // customer.setPassword("*****");
         return customer;
     }
 
@@ -65,7 +67,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public Customers getCustomerById(Integer customer_id) {
         Customers customer = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
@@ -80,7 +81,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public void deleteCustomerById(Integer customer_id) {
         Customers customer = customerRepository.findById(customer_id)
                 .orElseThrow(() -> new CustomerNotFoundException(customer_id));
@@ -88,7 +88,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @SuppressWarnings(value = { "null" })
     public Customers updateCustomer(Integer customer_id, Customers customer) {
         Customers checkCustomer = getCurrentCustomer();
         Customers customerToUpdate;
@@ -137,6 +136,13 @@ public class CustomerServiceImpl implements CustomerService {
         customerToUpdate.setPassword("********");
         return customerToUpdate;
 
+    }
+
+    @Override
+    public Customers getCustomerByIdNoPassword(Integer customer_id) {
+        Customers customer = customerRepository.findById(customer_id)
+                .orElseThrow(() -> new CustomerNotFoundException(customer_id));
+        return customer;
     }
 
 }
